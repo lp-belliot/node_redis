@@ -351,6 +351,9 @@ RedisClient.prototype.flush_and_error = function (error_attributes, options) {
     var aggregated_errors = [];
     var queue_names = options.queues || ['command_queue', 'offline_queue']; // Flush the command_queue first to keep the order intakt
     for (var i = 0; i < queue_names.length; i++) {
+        if (options.error) {
+            aggregated_errors.push(options.error);
+        }
         // If the command was fired it might have been processed so far
         if (queue_names[i] === 'command_queue') {
             error_attributes.message += ' It might have been processed.';
@@ -378,7 +381,7 @@ RedisClient.prototype.flush_and_error = function (error_attributes, options) {
         }
     }
     // Currently this would be a breaking change, therefore it's only emitted in debug_mode
-    if (exports.debug_mode && aggregated_errors.length) {
+    if (aggregated_errors.length) {
         var error;
         if (aggregated_errors.length === 1) {
             error = aggregated_errors[0];
